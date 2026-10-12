@@ -179,3 +179,8 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+#Other Stuff from Mark all bove look scary dont want to read
+.venv/
+__pycache__/
+*.pyc
+.vscode/
