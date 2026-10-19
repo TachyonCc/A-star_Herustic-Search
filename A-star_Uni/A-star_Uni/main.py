@@ -1,9 +1,6 @@
+from puzzle_generator import generate_random_puzzle
 
-Start_Board = [
-    [1, 2, 3],
-    [4, 0, 6],
-    [7, 5, 8]
-]
+Start_Board = generate_random_puzzle()
 
 Goal_Board = [
     [1, 2, 3],

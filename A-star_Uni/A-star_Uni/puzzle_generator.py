@@ -14,12 +14,15 @@ def is_solvable(puzzle):
         return True
     return False
 
+def to_board(puzzle):
+    return [puzzle[i:i + 3] for i in range(0, len(puzzle), 3)] 
+#Range read like this: range(start, stop, step)
+
 def generate_random_puzzle():
     random_puzzle = list(range(9))
-    random.shuffle(random_puzzle)
-    if is_solvable(random_puzzle):
-        return random_puzzle
-    return generate_random_puzzle()
 
-for _ in range(5):
-    print(generate_random_puzzle())
+    while True:
+        random.shuffle(random_puzzle)
+
+        if is_solvable(random_puzzle):
+            return to_board(random_puzzle)
