@@ -1,5 +1,6 @@
 from puzzle_generator import generate_random_puzzle
 from heuristic_funcs import heuristic_funcs
+import time
 
 
 Start_Board = generate_random_puzzle()
