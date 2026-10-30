@@ -10,7 +10,7 @@ def hamming_distance(board, goal):
     return misplaced
 
 #Manhattan Distance
-def manhattan_distance(board):
+def manhattan_distance(board, goal):
     distance = 0
 
     for row in range(3):

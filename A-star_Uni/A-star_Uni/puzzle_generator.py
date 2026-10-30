@@ -16,7 +16,6 @@ def is_solvable(puzzle):
 
 def to_board(puzzle):
     return [puzzle[i:i + 3] for i in range(0, len(puzzle), 3)] 
-#Range read like this: range(start, stop, step)
 
 def generate_random_puzzle():
     random_puzzle = list(range(9))
