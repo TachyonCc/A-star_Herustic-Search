@@ -1,37 +1,31 @@
 import heapq
 
+##A* takes start, goal and heuristic; returns (path, expanded_nodes).
+##Path is None if unreachable. get_neighbors returns boards one legal move away.
+
 def astar(start_board, goal_board, heuristic_distance):
-    #Convert boards to tuples 
+    # Tuples let us use boards as dictionary keys.
     def to_tuple(board):
         return tuple(tuple(row) for row in board)
 
     start = to_tuple(start_board)
     goal = to_tuple(goal_board)
 
-    #Open list stores (f_score, g_score, board)
-    open_list = []
-    heapq.heappush(open_list, (heuristic_distance(start_board, goal_board), 0, start))
-
-    #Best known cost to reach each board
+    # The priority queue orders entries by (f_score, g_score, board).
+    open_list = [(heuristic_distance(start_board, goal_board), 0, start)]
     g_scores = {start: 0}
-
-    #Store previous boards to reconstruct the solution
     parents = {start: None}
-
-    #Count expanded nodes for the experiment
     expanded_nodes = 0
 
     while open_list:
-        f, g, current = heapq.heappop(open_list)
+        _, g_score, current = heapq.heappop(open_list)
 
-        #Skip outdated entries if a shorter path was already found
-        if g > g_scores[current]:
+        # A board may still have an older, longer route in the queue.
+        if g_score > g_scores[current]:
             continue
 
-        #Goal reached
         if current == goal:
             path = []
-
             while current is not None:
                 path.append([list(row) for row in current])
                 current = parents[current]
@@ -40,68 +34,51 @@ def astar(start_board, goal_board, heuristic_distance):
             return path, expanded_nodes
 
         expanded_nodes += 1
-
-        #Convert tuple back to a 2D list for get_neighbors()
         current_board = [list(row) for row in current]
 
         for neighbor_board in get_neighbors(current_board):
             neighbor = to_tuple(neighbor_board)
+            new_g_score = g_score + 1
 
-            #Each move costs 1
-            new_g = g + 1
-
-            #Update only if this path is better
-            if new_g < g_scores.get(neighbor, float("inf")):
-                g_scores[neighbor] = new_g
+            if new_g_score < g_scores.get(neighbor, float("inf")):
+                g_scores[neighbor] = new_g_score
                 parents[neighbor] = current
 
-                h = heuristic_distance(neighbor_board, goal_board)
-                new_f = new_g + h
+                h_score = heuristic_distance(neighbor_board, goal_board)
+                f_score = new_g_score + h_score
+                heapq.heappush(open_list, (f_score, new_g_score, neighbor))
 
-                heapq.heappush(open_list, (new_f, new_g, neighbor))
-
-    #No solution found
     return None, expanded_nodes
 
 
-
 def get_neighbors(board):
-    neighborsCoordinates = []
-    neighborsBoards = []
-    row = -1
-    column = -1
+    blank_row = -1
+    blank_col = -1
 
-    #Find the empty tile
-    for i in range(len(board)):
-        for j in range(len(board[i])):
-            if board[i][j] == 0:
-                row = i
-                column = j
+    for row in range(len(board)):
+        for col in range(len(board[row])):
+            if board[row][col] == 0:
+                blank_row, blank_col = row, col
                 break
+        if blank_row != -1:
+            break
 
-    #Safety Guard        
-    if (row <0 or column <0):
-        return  []
+    if blank_row == -1:
+        return []
 
-    #Determine which moves are valid
-    if (row + 1 < len(board) ):
-        neighborsCoordinates.append((row + 1, column))
-    if (row - 1 >= 0 ):
-        neighborsCoordinates.append((row - 1, column))
-    if (column + 1 < len(board[0]) ):
-        neighborsCoordinates.append((row, column + 1))
-    if (column - 1 >= 0 ):
-        neighborsCoordinates.append((row, column - 1))
+    neighbor_positions = [
+        (blank_row + 1, blank_col),
+        (blank_row - 1, blank_col),
+        (blank_row, blank_col + 1),
+        (blank_row, blank_col - 1),
+    ]
 
-    #Create a new board for each move
-    for coord in neighborsCoordinates:
-        newBoard = [r.copy() for r in board]
-        
-    #Swap the empty tile with its neighbor
-        newRow, newCol = coord
-        newBoard[row][column] = newBoard[newRow][newCol]
-        newBoard[newRow][newCol] = 0
+    neighbors = []
+    for row, col in neighbor_positions:
+        if 0 <= row < len(board) and 0 <= col < len(board[0]):
+            new_board = [r.copy() for r in board]
+            new_board[blank_row][blank_col] = new_board[row][col]
+            new_board[row][col] = 0
+            neighbors.append(new_board)
 
-        neighborsBoards.append(newBoard)
-
-    return neighborsBoards
+    return neighbors

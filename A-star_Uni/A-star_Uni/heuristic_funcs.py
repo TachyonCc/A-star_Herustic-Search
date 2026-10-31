@@ -1,4 +1,6 @@
-#Hamming Distance
+"""Estimate moves from a 3x3 board to a goal; return an integer, ignoring 0."""
+
+
 def hamming_distance(board, goal):
     misplaced = 0
 
@@ -9,19 +11,23 @@ def hamming_distance(board, goal):
 
     return misplaced
 
-#Manhattan Distance
+
 def manhattan_distance(board, goal):
+    goal_positions = {}
+    for row in range(3):
+        for col in range(3):
+            goal_positions[goal[row][col]] = (row, col)
+
     distance = 0
 
     for row in range(3):
         for col in range(3):
             value = board[row][col]
-            if (value == 0):
-                continue  #Skip the empty tile
+            if value == 0:
+                continue
 
-            targetRow = (value - 1) // 3
-            targetCol = (value - 1) % 3
+            target_row, target_col = goal_positions[value]
 
-            distance += abs(row - targetRow) + abs(col - targetCol)
+            distance += abs(row - target_row) + abs(col - target_col)
 
     return distance

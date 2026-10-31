@@ -1,13 +1,17 @@
+"""Compare two heuristics on 100 boards; print mean and sample std. dev."""
 
-from puzzle_generator import generate_random_puzzle
-from heuristic_funcs import hamming_distance, manhattan_distance
-from A_star_impementation import astar
+import statistics
 import time
 
-Goal_Board = [
+from A_star_impementation import astar
+from heuristic_funcs import hamming_distance, manhattan_distance
+from puzzle_generator import generate_random_puzzle
+
+
+GOAL_BOARD = [
     [1, 2, 3],
     [4, 5, 6],
-    [7, 8, 0]
+    [7, 8, 0],
 ]
 
 
@@ -17,72 +21,60 @@ def print_board(board):
 
 
 def run_experiments(puzzles, heuristic):
-    total_nodes = 0
-    total_time = 0
+    nodes_results = []
+    time_results = []
 
     for board in puzzles:
         start_time = time.perf_counter()
-
-        path, expanded_nodes = astar(board, Goal_Board, heuristic)
-
-        end_time = time.perf_counter()
+        path, expanded_nodes = astar(board, GOAL_BOARD, heuristic)
+        elapsed_ms = (time.perf_counter() - start_time) * 1000
 
         if path is None:
-            print("No solution found!")
-            continue
+            raise RuntimeError("A generated solvable puzzle could not be solved.")
 
-        total_nodes += expanded_nodes
-        total_time += end_time - start_time
+        nodes_results.append(expanded_nodes)
+        time_results.append(elapsed_ms)
 
-    average_nodes = total_nodes / len(puzzles)
-    average_time = (total_time / len(puzzles)) * 1000
+    return {
+        "mean_nodes": statistics.mean(nodes_results),
+        "std_nodes": statistics.stdev(nodes_results),
+        "mean_time_ms": statistics.mean(time_results),
+        "std_time_ms": statistics.stdev(time_results),
+    }
 
-    return average_nodes, average_time
+
+def print_results(name, results):
+    print(f"\n{name}:")
+    print(f"Mean expanded nodes: {results['mean_nodes']:.2f}")
+    print(f"Sample std. dev. of expanded nodes: {results['std_nodes']:.2f}")
+    print(f"Mean computation time: {results['mean_time_ms']:.3f} ms")
+    print(f"Sample std. dev. of computation time: {results['std_time_ms']:.3f} ms")
 
 
 def main():
-    #Generate 100 puzzles for both heuristics
-    puzzles = [generate_random_puzzle() for i in range(100)]
+    puzzles = [generate_random_puzzle() for _ in range(100)]
 
-    print("=== 8-Puzzle A* Comparison ===")
+    print("=== 8-Puzzle A* Comparison ===", flush=True)
+    print("Results from the same 100 random solvable puzzles:")
 
-    #Hamming
-    hamming_nodes, hamming_time = run_experiments(
-        puzzles, hamming_distance
-    )
+    hamming_results = run_experiments(puzzles, hamming_distance)
+    print_results("Hamming Distance", hamming_results)
 
-    #Manhattan
-    manhattan_nodes, manhattan_time = run_experiments(
-        puzzles, manhattan_distance
-    )
+    manhattan_results = run_experiments(puzzles, manhattan_distance)
+    print_results("Manhattan Distance", manhattan_results)
 
-    #Print comparison results
-    print("\nResults from 100 random puzzles:")
-    print("----------------------------------")
-
-    print("Hamming Distance:")
-    print(f"Average expanded nodes: {hamming_nodes:.2f}")
-    print(f"Average computation time: {hamming_time:.3f} ms")
-
-    print("\nManhattan Distance:")
-    print(f"Average expanded nodes: {manhattan_nodes:.2f}")
-    print(f"Average computation time: {manhattan_time:.3f} ms")
-
-    #Show one example solution
-    print("\n=== Example Solution ===")
+    print("\n=== Example Solution (Manhattan) ===")
     print("Starting puzzle:")
     print_board(puzzles[0])
 
-    path, expanded = astar(puzzles[0], Goal_Board, manhattan_distance)
+    path, expanded = astar(puzzles[0], GOAL_BOARD, manhattan_distance)
+    if path is None:
+        raise RuntimeError("The example puzzle could not be solved.")
 
-    if path is not None:
-        print(f"\nPuzzle solved in {len(path) - 1} moves!")
-        print(f"Expanded nodes: {expanded}")
-
-        print("\nSolved board:")
-        print_board(path[-1])
-    else:
-        print("No solution found!")
+    print(f"\nPuzzle solved in {len(path) - 1} moves!")
+    print(f"Expanded nodes: {expanded}")
+    print("\nSolved board:")
+    print_board(path[-1])
 
 
 if __name__ == "__main__":
